@@ -5,8 +5,9 @@ without guessing from tool names. Hints follow the MCP spec:
 
 - ``readOnlyHint``: the tool does not change anything. Set explicitly on every tool.
 - ``destructiveHint``: the tool may delete or overwrite existing data. Set on every
-  non-read-only tool (the spec default is ``True`` when omitted).
+  tool (the spec default is ``True`` when omitted); always ``False`` for read-only tools.
 - ``idempotentHint``: repeating the call with the same arguments has no further effect.
+  Always ``True`` for read-only tools.
 - ``openWorldHint``: the tool talks to an external system (Gemini Notebook / Google).
   ``False`` means local config only.
 
@@ -35,7 +36,13 @@ from mcp.types import ToolAnnotations
 
 
 def _read(title: str, *, open_world: bool = True) -> ToolAnnotations:
-    return ToolAnnotations(title=title, readOnlyHint=True, openWorldHint=open_world)
+    return ToolAnnotations(
+        title=title,
+        readOnlyHint=True,
+        destructiveHint=False,
+        idempotentHint=True,
+        openWorldHint=open_world,
+    )
 
 
 def _write(

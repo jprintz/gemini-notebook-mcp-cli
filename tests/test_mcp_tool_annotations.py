@@ -43,17 +43,17 @@ def test_read_only_hint_is_set_explicitly_on_every_tool(tools):
         assert "readOnlyHint" in ann, f"{name}: readOnlyHint not set"
 
 
-def test_destructive_hint_is_set_on_every_non_read_only_tool(tools):
+def test_all_four_hints_are_set_on_every_tool(tools):
     for name, ann in tools.items():
-        if not ann["readOnlyHint"]:
-            assert "destructiveHint" in ann, f"{name}: destructiveHint not set"
-            assert "idempotentHint" in ann, f"{name}: idempotentHint not set"
+        for key in ("readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint"):
+            assert key in ann, f"{name}: {key} not set"
 
 
-def test_read_only_tools_do_not_claim_destructive_hints(tools):
+def test_read_only_tools_are_neither_destructive_nor_non_idempotent(tools):
     for name, ann in tools.items():
         if ann["readOnlyHint"]:
-            assert "destructiveHint" not in ann, f"{name}: read-only tool sets destructiveHint"
+            assert ann["destructiveHint"] is False, f"{name}: read-only tool is destructive"
+            assert ann["idempotentHint"] is True, f"{name}: read-only tool is not idempotent"
 
 
 def test_open_world_hint_is_set_on_every_tool(tools):
