@@ -9,20 +9,28 @@ from notebooklm_tools.mcp.tool_annotations import TOOL_ANNOTATIONS
 from notebooklm_tools.mcp.tools._utils import _tool_registry
 
 
+def _wire(annotations):
+    # Wire-format dict (what clients see), independent of the SDK's attribute naming.
+    return annotations.model_dump(by_alias=True, exclude_none=True) if annotations else {}
+
+
 @pytest.fixture(scope="module")
 def tools():
-    # Wire-format dicts (what clients see), independent of the SDK's attribute naming.
-    return {
-        t.name: (
-            t.annotations.model_dump(by_alias=True, exclude_none=True) if t.annotations else {}
-        )
-        for t in asyncio.run(mcp.list_tools())
-    }
+    # Built from the map, not mcp.list_tools(), so tools hidden through
+    # NOTEBOOKLM_DISABLED_GROUPS / NOTEBOOKLM_DISABLED_TOOLS are still checked.
+    return {name: _wire(ann) for name, ann in TOOL_ANNOTATIONS.items()}
 
 
 def test_annotation_map_covers_exactly_the_registered_tools():
     registered = {name for name, _ in _tool_registry}
     assert set(TOOL_ANNOTATIONS) == registered
+
+
+def test_listed_tools_carry_their_annotations():
+    listed = asyncio.run(mcp.list_tools())
+    assert listed
+    for tool in listed:
+        assert _wire(tool.annotations) == _wire(TOOL_ANNOTATIONS[tool.name]), tool.name
 
 
 def test_every_tool_has_a_title(tools):
@@ -68,3 +76,8 @@ def test_tools_that_can_delete_are_marked_destructive(tools):
         "tag",
     ):
         assert tools[name]["destructiveHint"] is True, name
+
+
+def test_tools_with_write_options_are_not_read_only(tools):
+    # research_status can import sources (auto_import=True).
+    assert tools["research_status"]["readOnlyHint"] is False

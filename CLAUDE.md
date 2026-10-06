@@ -316,7 +316,7 @@ When adding new features:
 3. Add the param structure with comments
 4. Add the low-level API method in `core/client.py`
 5. Add business logic in the appropriate `services/*.py` module
-6. Add a thin wrapper in `mcp/tools/*.py` (for MCP) and `cli/commands/*.py` (for CLI)
+6. Add a thin wrapper in `mcp/tools/*.py` (for MCP) and `cli/commands/*.py` (for CLI). Add the MCP tool's title and hints to `mcp/tool_annotations.py`
 7. Write unit tests for the service function in `tests/services/`
 8. Update the "Features NOT Yet Implemented" checklist
 9. Add test case to docs/MCP_TEST_PLAN.md

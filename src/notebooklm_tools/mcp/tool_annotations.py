@@ -19,6 +19,8 @@ Classification rules:
 - Rename, set and configure tools overwrite a single value: ``destructive=False``,
   ``idempotent=True``.
 - Delete tools, and tools that replace existing content, are ``destructive=True``.
+  Downloads are the exception: they can overwrite an earlier local copy, but that
+  copy can always be downloaded again, so they stay ``destructive=False``.
 - Multi-action tools take the most severe classification of any action they expose
   (for example ``note`` and ``label`` can delete, ``pipeline`` can run
   ``notebook_delete``).
@@ -54,8 +56,8 @@ TOOL_ANNOTATIONS: dict[str, ToolAnnotations] = {
     # Can include deletes - conservative
     "batch": _write("Batch operations across notebooks", destructive=True, idempotent=False),
     "chat_configure": _write("Configure notebook chat", destructive=False, idempotent=True),
-    # Writes a local file
-    "chat_export": _write("Export chat transcript", destructive=False, idempotent=True),
+    # Returns the transcript content; writes no file
+    "chat_export": _read("Export chat transcript"),
     "chat_get": _read("Get chat transcript"),
     "chat_list": _read("List chat sessions"),
     # Creates a new note each call
@@ -68,9 +70,9 @@ TOOL_ANNOTATIONS: dict[str, ToolAnnotations] = {
     "collection_set_emoji": _write("Set collection emoji", destructive=False, idempotent=True),
     # May add chat history in notebooks
     "cross_notebook_query": _read("Query multiple notebooks"),
-    # Writes local files
+    # Writes local files; may overwrite earlier downloads, which can be fetched again
     "download_all_artifacts": _write("Download all artifacts", destructive=False, idempotent=True),
-    # Writes a local file
+    # Writes a local file; may overwrite an earlier download, which can be fetched again
     "download_artifact": _write("Download artifact", destructive=False, idempotent=True),
     # Creates a new Google file each call
     "export_artifact": _write(
@@ -101,18 +103,21 @@ TOOL_ANNOTATIONS: dict[str, ToolAnnotations] = {
     # Exposure risk - keep approval
     "notebook_share_public": _write("Set public link access", destructive=False, idempotent=True),
     "notebook_share_status": _read("Get sharing status"),
-    # Arbitrary multi-step - conservative
+    # run can execute notebook_delete steps; create overwrites a saved pipeline
     "pipeline": _write("Run notebook pipeline", destructive=True, idempotent=False),
     # Local config only
     "profile": _write(
         "Manage account profiles", destructive=False, idempotent=True, open_world=False
     ),
+    # Replaces stored credentials only with fresh ones from the user's own saved browser
+    # session. save_auth_tokens is destructive because it stores caller-supplied cookies.
     "refresh_auth": _write("Refresh authentication", destructive=False, idempotent=True),
-    # Behaviour unclear - verify in code
+    # get/elements read; generate starts quota-consuming element generations
     "report": _write("Interact with report elements", destructive=False, idempotent=False),
     "research_import": _write("Import research sources", destructive=False, idempotent=False),
     "research_start": _write("Start research", destructive=False, idempotent=False),
-    "research_status": _read("Get research status"),
+    # auto_import=True imports the discovered sources into the notebook
+    "research_status": _write("Get research status", destructive=False, idempotent=False),
     # Overwrites stored credentials
     "save_auth_tokens": _write(
         "Save auth cookies", destructive=True, idempotent=True, open_world=False
@@ -130,8 +135,8 @@ TOOL_ANNOTATIONS: dict[str, ToolAnnotations] = {
     "studio_create": _write("Create studio artifact", destructive=False, idempotent=False),
     # Permanent
     "studio_delete": _write("Delete studio artifact", destructive=True, idempotent=True),
-    # Alters existing artifact
-    "studio_revise": _write("Revise slides", destructive=True, idempotent=False),
+    # Creates a new artifact; the original slide deck is not modified
+    "studio_revise": _write("Revise slides", destructive=False, idempotent=False),
     # Read + rename in one tool - worth splitting upstream
     "studio_status": _write("Get studio status / rename", destructive=False, idempotent=True),
     # action=remove deletes saved tags
