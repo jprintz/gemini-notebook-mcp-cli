@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **MCP tool annotations.** Every MCP tool now reports a title plus `readOnlyHint`, `destructiveHint`, `idempotentHint` and `openWorldHint`, so clients can group tools and decide when to ask for approval. The classification lives in one place, `mcp/tool_annotations.py`, and a test fails if a registered tool is missing from it.
+
 ## [0.15.4] - 2026-10-06
 
 > Windows CI validation, ephemeral CDP port fallback, actionable headless refresh diagnostics, atomic concurrency for aliases and tags, bounded query concurrency, and MCP server version caching.
