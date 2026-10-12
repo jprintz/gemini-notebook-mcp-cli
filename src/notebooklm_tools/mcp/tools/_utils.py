@@ -485,8 +485,10 @@ def logged_tool() -> Callable[[Callable[P, Any]], Callable[P, Any]]:
 
 def register_all_tools(mcp: Any) -> None:
     """Register all collected tools with the MCP instance."""
-    for _, wrapper in _tool_registry:
-        mcp.tool()(wrapper)
+    from ..tool_annotations import TOOL_ANNOTATIONS
+
+    for name, wrapper in _tool_registry:
+        mcp.tool(annotations=TOOL_ANNOTATIONS.get(name))(wrapper)
 
 
 # Essential cookies for NotebookLM API authentication

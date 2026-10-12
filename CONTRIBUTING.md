@@ -72,7 +72,7 @@ Think in full circles: **create, status, download**. A half-implemented feature 
 | 1 | `docs/API_REFERENCE.md` | Document the RPC ID and param structure |
 | 2 | `core/client.py` | Add the low-level API method |
 | 3 | `services/*.py` | Add business logic, validation, error handling |
-| 4 | `mcp/tools/*.py` | Add MCP tool (thin wrapper around service) |
+| 4 | `mcp/tools/*.py`, `mcp/tool_annotations.py` | Add MCP tool (thin wrapper around service) and its title and behaviour hints |
 | 5 | `cli/commands/*.py` | Add CLI command (thin wrapper around service) |
 | 6 | Status/read-back | Update status parsing if your feature produces artifacts |
 | 7 | `tests/services/` | Write unit tests for the service function |
